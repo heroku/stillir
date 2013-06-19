@@ -63,4 +63,4 @@ $ rebar compile ct
 -spec update_env(app_name(), file:filename_all()) -> ok|no_return().
 ```
 
-Note that `transform_fun/0` is not run if the default value is used.
+The `transform_fun/0` is only run if the input is a list.
