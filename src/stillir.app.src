@@ -4,8 +4,6 @@
   {description, "Read Unix env vars into application config"},
   {vsn, "0.1.0"},
   {registered, []},
-  {applications, [
-                  kernel,
-                  stdlib
-                 ]}
+  {applications, [kernel,
+                  stdlib]}
  ]}.
