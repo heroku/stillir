@@ -3,7 +3,7 @@
 A library to cache Environmental variables for your Erlang application, useful when you 
 pass configuration details to your application using the environment.
 
-Reason: http://www.12factor.net/configw
+Reason: http://www.12factor.net/config
 
 ## The name
 
