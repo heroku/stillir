@@ -5,6 +5,8 @@ pass configuration details to your application using the environment.
 
 Reason: http://www.12factor.net/config
 
+[![Build Status](https://magnum.travis-ci.com/heroku/stillir.png?token=xVUSrt9RJn9ZjQwspdLg&branch=master)](https://magnum.travis-ci.com/heroku/stillir)
+
 ## The name
 
 Stillir is icelandic for "the one who configures", it can also be used as a verb:
