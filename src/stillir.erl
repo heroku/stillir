@@ -1,7 +1,6 @@
 -module(stillir).
 
--export([init/0,
-         set_config/1,
+-export([set_config/1,
          set_config/3,
          set_config/4,
          get_config/2,
@@ -18,15 +17,11 @@
 -type transform() :: integer|float|binary|atom|transform_fun().
 -type opt() :: {default, any()}|{transform, transform()}.
 -type opts() :: [opt()]|[].
--type config_tuple() :: {app_name(), app_key(), env_key()}|
-                        {app_name(), app_key(), env_key(), opts()}.
+-type config_spec() :: {app_name(), app_key(), env_key()}|
+                       {app_name(), app_key(), env_key(), opts()}.
+-type config_specs() :: [config_spec()].
 
--spec init() -> ok.
-init() ->
-    stillir = ets:new(stillir, [public, named_table]),
-    ok.
-
--spec set_config([config_tuple()]|[]) -> ok|no_return().
+-spec set_config(config_specs()|[]) -> ok|no_return().
 set_config([]) ->
     ok;
 set_config([{AppName, AppKey, EnvKey}|Rest]) ->
@@ -43,7 +38,6 @@ set_config(AppName, AppKey, EnvKey) ->
 -spec set_config(app_name(), app_key(), env_key(),
                  opts()) -> ok|no_return().
 set_config(AppName, AppKey, EnvKey, Opts) ->
-    save_mapping(AppName, AppKey, EnvKey, Opts),
     EnvValue = get_env(EnvKey),
     set_env_value(AppName, AppKey, EnvKey, EnvValue, Opts).
 
@@ -65,12 +59,12 @@ get_config(AppName, AppKey, DefaultValue) ->
             Val
     end.
 
--spec update_env(app_name(), file:filename_all()) -> ok|no_return().
-update_env(Application, Filename) ->
+-spec update_env(file:filename_all(), config_specs()|[]) -> ok|no_return().
+update_env(Filename, Specs) ->
     case file:open(Filename, [read, raw]) of
         {ok, IoDev} ->
             NewValues = read_file(IoDev, []),
-            reread_environment(Application, NewValues);
+            reread_environment(NewValues, Specs);
         {error, _Error} = Error ->
             Error
     end.
@@ -91,24 +85,22 @@ transform_value(Value, Fun) when is_function(Fun, 1) andalso is_list(Value) ->
 transform_value(Value, _) ->
     Value.
 
-reread_environment(_AppName, []) ->
+reread_environment(_, []) ->
     ok;
-reread_environment(AppName, [no_match|Rest]) ->
-    reread_environment(AppName, Rest);
-reread_environment(AppName, [{EnvKey, EnvVar}|Rest]) ->
-    case ets:lookup(stillir, {AppName, EnvKey}) of
-        [] ->
-            error_logger:info_msg("app=stillir at=reread_environment warning=unmapped env variable"),
-            reread_environment(AppName, Rest);
-        [{{AppName, EnvKey}, {AppKey, Opts}}] ->
-            true = os:putenv(EnvKey, EnvVar),
-            set_config(AppName, AppKey, EnvKey, Opts),
-            reread_environment(AppName, Rest)
-    end.
-
-save_mapping(AppName, AppKey, EnvKey, Opts) ->
-    ets:insert(stillir, {{AppName, EnvKey}, {AppKey, Opts}}).
-
+reread_environment(NewValues, [{AppName, AppKey, EnvKey}|Rest]) ->
+    set_config(AppName, AppKey, {EnvKey, NewValues}),
+    reread_environment(NewValues, Rest);
+reread_environment(NewValues, [{AppName, AppKey, EnvKey, Opts}|Rest]) ->
+    set_config(AppName, AppKey, {EnvKey, NewValues}, Opts),
+    reread_environment(NewValues, Rest).
+    
+get_env({EnvKey, EnvList}) ->
+    case proplists:get_value(EnvKey, EnvList) of
+        undefined ->
+            missing_env_key;
+        EnvValue ->
+            {value, EnvValue}
+    end;
 get_env(EnvKey) ->
     case os:getenv(EnvKey) of
         false ->

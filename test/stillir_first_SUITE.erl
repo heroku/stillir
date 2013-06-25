@@ -132,13 +132,14 @@ get_conf(Config) ->
     Config.
 
 update_env(Config) ->
-    ok = stillir:set_config([{stillir, update_1, "CONF1"},
-                             {stillir, update_2, "CONF2", [{transform, atom}]},
-                             {stillir, update_3, "CONF3", [{transform, atom}]}]),
+    Specs = [{stillir, update_1, "CONF1"},
+             {stillir, update_2, "CONF2", [{transform, atom}]},
+             {stillir, update_3, "CONF3", [{transform, atom}]}],
+    ok = stillir:set_config(Specs),
     "var1" = stillir:get_config(stillir, update_1),
     var2 = stillir:get_config(stillir, update_2),
     var3 = stillir:get_config(stillir, update_3),
-    stillir:update_env(stillir, code:lib_dir(stillir) ++ "/test/keys.sh"),
+    stillir:update_env(code:lib_dir(stillir) ++ "/test/keys.sh", Specs),
     "updated_var1" = stillir:get_config(stillir, update_1),
     updated_var2 = stillir:get_config(stillir, update_2),
     updated_var3 = stillir:get_config(stillir, update_3),
