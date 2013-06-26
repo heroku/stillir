@@ -34,29 +34,23 @@ end_per_suite(Config) ->
 
 %% Runs before the test case. Runs in the same process.
 init_per_testcase(set_conf_no_default, Config) ->
-    ok = stillir:init(),
     true = os:putenv("SET_CONF_NO_DEFAULT", "test value 1"),
     Config;
 init_per_testcase(set_conf_transform_fun, Config) ->
-    ok = stillir:init(),
     true = os:putenv("SET_CONF_TRANSFORM_FUN", "1000"),
     Config;
 init_per_testcase(set_conf_default_transform_fun, Config) ->
-    ok = stillir:init(),
     true = os:putenv("SET_CONF_DEFAULT_TRANSFORM_FUN", "atom"),
     Config;
 init_per_testcase(set_conf_list, Config) ->
-    ok = stillir:init(),
     true = os:putenv("SET_CONF_LIST1", "one"),
     true = os:putenv("SET_CONF_LIST2", "two"),
     true = os:putenv("SET_CONF_LIST3", "10.01"),
     Config;
 init_per_testcase(get_conf, Config) ->
-    ok = stillir:init(),
     application:set_env(stillir, foo, bar),
     Config;    
 init_per_testcase(update_env, Config) ->
-    ok = stillir:init(),
     lists:foreach(fun({Key, Var}) ->
                           true = os:putenv(Key, Var)
                   end, [{"CONF1", "var1"},
@@ -64,7 +58,6 @@ init_per_testcase(update_env, Config) ->
                         {"CONF3", "var3"}]),
     Config;
 init_per_testcase(_CaseName, Config) ->
-    ok = stillir:init(),
     Config.
 
 %% Runs after the test case. Runs in the same process.
@@ -112,12 +105,12 @@ set_conf_default_transform_fun2(Config) ->
     Config.
 
 set_conf_list(Config) ->
-    ok = stillir:set_config([{stillir, set_config_list1, "SET_CONF_LIST1"},
-                             {stillir, set_config_list2, "SET_CONF_LIST_FAIL1", [{default, default1}]},
-                             {stillir, set_config_list3, "SET_CONF_LIST3", [{transform, float}]},
-                             {stillir, set_config_list4, "SET_CONF_LIST_FAIL2", [{default, default2},
+    ok = stillir:set_config(stillir, [{set_config_list1, "SET_CONF_LIST1"},
+                                      {set_config_list2, "SET_CONF_LIST_FAIL1", [{default, default1}]},
+                                      {set_config_list3, "SET_CONF_LIST3", [{transform, float}]},
+                                      {set_config_list4, "SET_CONF_LIST_FAIL2", [{default, default2},
                                                                                  {transform, float}]},
-                             {stillir, set_config_list5, "SET_CONF_LIST2", [{default, unused},
+                                      {set_config_list5, "SET_CONF_LIST2", [{default, unused},
                                                                             {transform, fun(L) -> list_to_atom(L) end}]}]),
     "one" = stillir:get_config(stillir, set_config_list1),
     default1 = stillir:get_config(stillir, set_config_list2),
@@ -132,14 +125,14 @@ get_conf(Config) ->
     Config.
 
 update_env(Config) ->
-    Specs = [{stillir, update_1, "CONF1"},
-             {stillir, update_2, "CONF2", [{transform, atom}]},
-             {stillir, update_3, "CONF3", [{transform, atom}]}],
-    ok = stillir:set_config(Specs),
+    Specs = [{update_1, "CONF1"},
+             {update_2, "CONF2", [{transform, atom}]},
+             {update_3, "CONF3", [{transform, atom}]}],
+    ok = stillir:set_config(stillir, Specs),
     "var1" = stillir:get_config(stillir, update_1),
     var2 = stillir:get_config(stillir, update_2),
     var3 = stillir:get_config(stillir, update_3),
-    stillir:update_env(code:lib_dir(stillir) ++ "/test/keys.sh", Specs),
+    stillir:update_env(stillir, code:lib_dir(stillir) ++ "/test/keys.sh", Specs),
     "updated_var1" = stillir:get_config(stillir, update_1),
     updated_var2 = stillir:get_config(stillir, update_2),
     updated_var3 = stillir:get_config(stillir, update_3),

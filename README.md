@@ -42,19 +42,19 @@ $ rebar compile ct
 -type transform() :: integer|float|binary|atom|transform_fun().
 -type opt() :: {default, any()}|{transform, transform()}.
 -type opts() :: [opt()]|[].
--type config_spec() :: {app_name(), app_key(), env_key()}|
-                       {app_name(), app_key(), env_key(), opts()}.
+-type config_spec() :: {app_key(), env_key()}|
+                       {app_key(), env_key(), opts()}.
 -type config_specs() :: [config_spec()].
 ```
 
 ### Functions
 
 ``` erlang
--spec set_config(config_specs()|[]) -> ok|no_return().
+-spec set_config(app_name(), config_specs()|[]) -> ok|no_return().
 -spec set_config(app_name(), app_key(), env_key()) -> ok|no_return().
 -spec get_config(app_name(), app_key()) -> app_key_value()|no_return().
 -spec get_config(app_name(), app_key(), default_value()) -> app_key_value().
--spec update_env(app_name(), config_specs()|[], file:filename_all()) -> ok|no_return().
+-spec update_env(app_name(), file:filename_all(), config_specs()|[]) -> ok|no_return().
 ```
 
 The `transform_fun/0` is only run if the input is a list.
