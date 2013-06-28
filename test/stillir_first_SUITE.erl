@@ -81,7 +81,12 @@ set_conf_no_default(Config) ->
 
 set_conf_default(Config) ->
     ok = stillir:set_config(stillir, set_conf_default, "SET_CONF_DEFAULT", [{default, default_value}]),
-    default_value = stillir:get_config(stillir, set_conf_default),    
+    ok = stillir:set_config(stillir, set_conf_default_2, "SET_CONF_DEFAULT",
+                            [{default, fun() ->
+                                               stillir:get_config(stillir, set_conf_default)
+                                       end}]),
+    default_value = stillir:get_config(stillir, set_conf_default),
+    default_value = stillir:get_config(stillir, set_conf_default_2),
     Config.
 
 set_conf_transform_fun(Config) ->

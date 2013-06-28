@@ -39,8 +39,9 @@ $ rebar compile ct
 -type app_key_value() :: any().
 -type default_value() :: app_key_value().
 -type transform_fun() :: fun(((env_var_value())) -> app_key_value()).
+-type default_fun() :: fun(() -> default_value()).
 -type transform() :: integer|float|binary|atom|transform_fun().
--type opt() :: {default, any()}|{transform, transform()}|required.
+-type opt() :: {default, any()|default_fun()}|{transform, transform()}|required.
 -type opts() :: [opt()]|[].
 -type config_spec() :: {app_key(), env_key()}|
                        {app_key(), env_key(), opts()}.

@@ -14,8 +14,9 @@
 -type app_key_value() :: any().
 -type default_value() :: app_key_value().
 -type transform_fun() :: fun(((env_var_value())) -> app_key_value()).
+-type default_fun() :: fun(() -> default_value()).
 -type transform() :: integer|float|binary|atom|transform_fun().
--type opt() :: {default, any()}|{transform, transform()}|required.
+-type opt() :: {default, any()|default_fun()}|{transform, transform()}|required.
 -type opts() :: [opt()]|[].
 -type config_spec() :: {app_key(), env_key()}|
                        {app_key(), env_key(), opts()}.
@@ -110,10 +111,15 @@ get_env(EnvKey) ->
             {value, EnvValue}
     end.
 
+get_default(Fun) when is_function(Fun, 0) ->
+    Fun();
+get_default(Other) ->
+    Other.
+
 set_env_value(AppName, AppKey, EnvKey, missing_env_key, Opts) ->
     case proplists:is_defined(default, Opts) of
         true ->
-            DefaultValue = proplists:get_value(default, Opts),
+            DefaultValue = get_default(proplists:get_value(default, Opts)),
             set_env_value(AppName, AppKey, EnvKey, {value, DefaultValue}, Opts);
         false ->
             case proplists:get_value(required, Opts) of
