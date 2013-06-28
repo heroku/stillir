@@ -15,7 +15,7 @@
 -type default_value() :: app_key_value().
 -type transform_fun() :: fun(((env_var_value())) -> app_key_value()).
 -type transform() :: integer|float|binary|atom|transform_fun().
--type opt() :: {default, any()}|{transform, transform()}.
+-type opt() :: {default, any()}|{transform, transform()}|required.
 -type opts() :: [opt()]|[].
 -type config_spec() :: {app_key(), env_key()}|
                        {app_key(), env_key(), opts()}.
@@ -116,7 +116,12 @@ set_env_value(AppName, AppKey, EnvKey, missing_env_key, Opts) ->
             DefaultValue = proplists:get_value(default, Opts),
             set_env_value(AppName, AppKey, EnvKey, {value, DefaultValue}, Opts);
         false ->
-            erlang:error({missing_env_key, {AppName, EnvKey}})
+            case proplists:get_value(required, Opts) of
+                true ->
+                    erlang:error({missing_env_key, {AppName, EnvKey}});
+                _ ->
+                    ok
+            end
     end;
 set_env_value(AppName, AppKey, _, {value, EnvValue}, Opts) ->
     Transform = proplists:get_value(transform, Opts),

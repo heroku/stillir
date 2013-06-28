@@ -70,7 +70,7 @@ end_per_testcase(_CaseName, Config) ->
 set_conf_no_default(Config) ->
     ok = stillir:set_config(stillir, set_conf_no_default, "SET_CONF_NO_DEFAULT"),
     "test value 1" = stillir:get_config(stillir, set_conf_no_default),
-    try stillir:set_config(stillir, set_conf_no_default_fail, "SET_CONF_NO_DEFAULT_FAIL") of
+    try stillir:set_config(stillir, set_conf_no_default_fail, "SET_CONF_NO_DEFAULT_FAIL", [required]) of
         _ ->
             throw({error, got_unavailable_env})
     catch
