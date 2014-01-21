@@ -51,6 +51,7 @@ $ rebar compile ct
 ### Functions
 
 ``` erlang
+-spec set_config(app_name()) -> ok|no_return().
 -spec set_config(app_name(), config_specs()|[]) -> ok|no_return().
 -spec set_config(app_name(), app_key(), env_key()) -> ok|no_return().
 -spec get_config(app_name(), app_key()) -> app_key_value()|no_return().

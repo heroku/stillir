@@ -1,5 +1,6 @@
 -module(stillir_first_SUITE).
 -include_lib("common_test/include/ct.hrl").
+-include_lib("eunit/include/eunit.hrl").
 -compile(export_all).
 
 %%%%%%%%%%%%%%%%%%%%
@@ -17,6 +18,7 @@ all() ->
      ,set_conf_list
      ,get_conf
      ,update_env
+     ,refresh_env
     ].
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -56,6 +58,14 @@ init_per_testcase(update_env, Config) ->
                   end, [{"CONF1", "var1"},
                         {"CONF2", "var2"},
                         {"CONF3", "var3"}]),
+    Config;
+init_per_testcase(refresh_env, Config) ->
+    lists:foreach(fun({Key, Var}) ->
+                          true = os:putenv(Key, Var)
+                  end, [{"CONF1", "var1"},
+                        {"CONF2", "var2"},
+                        {"CONF3", "var3"},
+                        {"OMIT", "omit1"}]),
     Config;
 init_per_testcase(_CaseName, Config) ->
     Config.
@@ -142,3 +152,36 @@ update_env(Config) ->
     updated_var2 = stillir:get_config(stillir, update_2),
     updated_var3 = stillir:get_config(stillir, update_3),
     Config.
+
+refresh_env(Config) ->
+    %% Basic spec work
+    Specs = [{update_1, "CONF1"},
+             {update_2, "CONF2", [{transform, atom}]},
+             {update_3, "CONF3", [{transform, atom}]}],
+    ok = stillir:set_config(stillir, Specs),
+    "var1" = stillir:get_config(stillir, update_1),
+    var2 = stillir:get_config(stillir, update_2),
+    var3 = stillir:get_config(stillir, update_3),
+    %% Basic stateful updating works
+    true = os:putenv("CONF1", "vara"),
+    true = os:putenv("CONF2", "varb"),
+    stillir:set_config(stillir),
+    "vara" = stillir:get_config(stillir, update_1),
+    varb = stillir:get_config(stillir, update_2),
+    var3 = stillir:get_config(stillir, update_3),
+    %% Track new variable solo and have it part of the spec
+    ?assertError({missing_config, omit}, stillir:get_config(stillir, omit)),
+    stillir:set_config(stillir, omit, "OMIT"),
+    "omit1" = stillir:get_config(stillir, omit),
+    %% The new variable is tracked along with already tracked content
+    true = os:putenv("CONF3", "varc"),
+    true = os:putenv("OMIT", "omita"),
+    stillir:set_config(stillir),
+    varc = stillir:get_config(stillir, update_3),
+    "omita" = stillir:get_config(stillir, omit),
+    %% Unknown specs error out
+    ?assertError({missing_spec, my_fake_app}, stillir:set_config(my_fake_app)),
+    Config.
+
+
+
