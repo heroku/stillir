@@ -1,6 +1,7 @@
 -module(stillir).
 
--export([set_config/2,
+-export([set_config/1,
+         set_config/2,
          set_config/3,
          set_config/4,
          get_config/2,
@@ -22,6 +23,10 @@
                        {app_key(), env_key(), opts()}.
 -type config_specs() :: [config_spec()].
 
+-spec set_config(app_name()) -> ok|no_return().
+set_config(AppName) ->
+    set_config(AppName, get_spec(AppName)).
+
 -spec set_config(app_name(), config_specs()|[]) -> ok|no_return().
 set_config(_, []) ->
     ok;
@@ -40,7 +45,8 @@ set_config(AppName, AppKey, EnvKey) ->
                  opts()) -> ok|no_return().
 set_config(AppName, AppKey, EnvKey, Opts) ->
     EnvValue = get_env(EnvKey),
-    set_env_value(AppName, AppKey, EnvKey, EnvValue, Opts).
+    set_env_value(AppName, AppKey, EnvKey, EnvValue, Opts),
+    set_spec(AppName, AppKey, EnvKey, Opts).
 
 -spec get_config(app_name(), app_key()) -> app_key_value()|no_return().
 get_config(AppName, AppKey) ->
@@ -155,4 +161,19 @@ handle_line(Data) ->
         Error ->
             error_logger:info_msg("app=stillir at=handle_line error=~p", [Error]),
             no_match
+    end.
+
+set_spec(AppName, AppKey, EnvKey, Opts) ->
+    application:set_env(stillir, {'$config', AppName}, spec_exists),
+    application:set_env(stillir, {'$config', AppName, AppKey}, {EnvKey,Opts}).
+
+get_spec(AppName) ->
+    case application:get_env(stillir, {'$config', AppName}, no_spec) of
+        no_spec ->
+            erlang:error({missing_spec, AppName});
+        spec_exists ->
+            Env = application:get_all_env(stillir),
+            [{AppKey, EnvKey, Opts}
+             || {{'$config', App, AppKey}, {EnvKey, Opts}} <- Env,
+                App =:= AppName]
     end.
