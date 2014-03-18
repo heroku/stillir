@@ -1,6 +1,4 @@
 language: erlang
-before_install:
-- ssh-keyscan git.herokai.com >> ~/.ssh/known_hosts
 script: "mkdir -p logs; rebar compile && ct_run -dir test/ -logdir logs -pa ebin"
 otp_release:
   - R16B
