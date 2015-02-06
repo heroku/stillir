@@ -95,7 +95,7 @@ reread_environment(AppName, NewValues, [{AppKey, EnvKey}|Rest]) ->
 reread_environment(AppName, NewValues, [{AppKey, EnvKey, Opts}|Rest]) ->
     set_config(AppName, AppKey, {EnvKey, NewValues}, Opts),
     reread_environment(AppName, NewValues, Rest).
-    
+
 get_env({EnvKey, EnvList}) ->
     case proplists:get_value(EnvKey, EnvList) of
         undefined ->
@@ -149,7 +149,7 @@ read_file(IoDev, Retval) ->
     end.
 
 handle_line(Data) ->
-    case re:split(Data, "^export\s+([A-Z0-9_]+)='(.*)'\n$") of
+    case re:split(Data, "^export\s+([A-Z0-9_]+)='?([^'.]*)'?\n$") of
         [_, EnvKey, EnvVar, _] ->
             {binary_to_list(EnvKey), binary_to_list(EnvVar)};
         Error ->
