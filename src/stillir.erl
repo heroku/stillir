@@ -149,7 +149,7 @@ read_file(IoDev, Retval) ->
     end.
 
 handle_line(Data) ->
-    case re:split(Data, "^export\s+([A-Z0-9_]+)='?([^'.]*)'?\n$") of
+    case re:split(Data, "^export\s+([A-Z0-9_]+)='?([^']*)'?\n$") of
         [_, EnvKey, EnvVar, _] ->
             {binary_to_list(EnvKey), binary_to_list(EnvVar)};
         Error ->
