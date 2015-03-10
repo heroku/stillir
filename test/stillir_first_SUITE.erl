@@ -140,5 +140,5 @@ update_env(Config) ->
     stillir:update_env(stillir, code:lib_dir(stillir) ++ "/test/keys.sh", Specs),
     "updated_var1" = stillir:get_config(stillir, update_1),
     updated_var2 = stillir:get_config(stillir, update_2),
-    updated_var3 = stillir:get_config(stillir, update_3),
+    'updated.var3' = stillir:get_config(stillir, update_3),
     Config.
