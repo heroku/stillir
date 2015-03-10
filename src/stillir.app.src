@@ -2,7 +2,7 @@
 {application, stillir,
  [
   {description, "Read Unix env vars into application config"},
-  {vsn, "0.1.3"},
+  {vsn, "0.1.4"},
   {registered, []},
   {applications, [kernel,
                   stdlib]}
