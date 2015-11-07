@@ -141,8 +141,8 @@ set_conf_sub(Config) ->
 
     {'EXIT', {{missing_config, [set_conf_sub, one, none]}, _}} =
         (catch stillir:get_config(stillir, [set_conf_sub, one, none])),
-    {'EXIT', {{missing_config, [set_conf_sub, none]}, _}} =
-        (catch stillir:get_config(stillir, [set_conf_sub, none])),
+    {'EXIT', {{missing_config, [set_conf_sub, two, none]}, _}} =
+        (catch stillir:get_config(stillir, [set_conf_sub, two, none])),
 
     [{a, "one_a"}, {b, "one_b"}, {default, default1}] =
         stillir:get_config(stillir, [set_conf_sub, one]),
