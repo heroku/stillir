@@ -15,6 +15,7 @@ all() ->
      ,set_conf_default_transform_fun
      ,set_conf_default_transform_fun2
      ,set_conf_list
+     ,set_conf_sub
      ,get_conf
      ,update_env
     ].
@@ -46,6 +47,10 @@ init_per_testcase(set_conf_list, Config) ->
     true = os:putenv("SET_CONF_LIST1", "one"),
     true = os:putenv("SET_CONF_LIST2", "two"),
     true = os:putenv("SET_CONF_LIST3", "10.01"),
+    Config;
+init_per_testcase(set_conf_sub, Config) ->
+    true = os:putenv("SET_CONF_SUB_ONE_A", "one_a"),
+    true = os:putenv("SET_CONF_SUB_ONE_B", "one_b"),
     Config;
 init_per_testcase(get_conf, Config) ->
     application:set_env(stillir, foo, bar),
@@ -122,6 +127,27 @@ set_conf_list(Config) ->
     10.01 = stillir:get_config(stillir, set_config_list3),
     default2 = stillir:get_config(stillir, set_config_list4),
     two = stillir:get_config(stillir, set_config_list5),
+    Config.
+
+set_conf_sub(Config) ->
+    Specs1 = [{[set_conf_sub, one, a], "SET_CONF_SUB_ONE_A"},
+              {[set_conf_sub, one, b], "SET_CONF_SUB_ONE_B"},
+              {[set_conf_sub, one, default], "SET_CONF_SUB_ONE_DEFAULT", [{default, default1}]}],
+    ok = stillir:set_config(stillir, Specs1),
+    "one_a" = stillir:get_config(stillir, [set_conf_sub, one, a]),
+    "one_b" = stillir:get_config(stillir, [set_conf_sub, one, b]),
+    default1 = stillir:get_config(stillir, [set_conf_sub, one, default]),
+    default2 = stillir:get_config(stillir, [set_conf_sub, none, default2], default2),
+
+    {'EXIT', {{missing_config, [set_conf_sub, one, none]}, _}} =
+        (catch stillir:get_config(stillir, [set_conf_sub, one, none])),
+    {'EXIT', {{missing_config, [set_conf_sub, none]}, _}} =
+        (catch stillir:get_config(stillir, [set_conf_sub, none])),
+
+    [{a, "one_a"}, {b, "one_b"}, {default, default1}] =
+        stillir:get_config(stillir, [set_conf_sub, one]),
+    [{one, [{a, "one_a"}, {b, "one_b"}, {default, default1}]}] =
+        stillir:get_config(stillir, set_conf_sub),
     Config.
 
 get_conf(Config) ->

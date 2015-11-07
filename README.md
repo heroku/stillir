@@ -33,7 +33,7 @@ $ rebar compile ct
 
 ``` erlang
 -type app_name() :: atom().
--type app_key() :: atom().
+-type app_key() :: atom() | [atom()].
 -type env_key() :: string().
 -type env_var_value() :: string().
 -type app_key_value() :: any().

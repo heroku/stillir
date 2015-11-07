@@ -8,7 +8,7 @@
          update_env/3]).
 
 -type app_name() :: atom().
--type app_key() :: atom().
+-type app_key() :: atom() | [atom()].
 -type env_key() :: string().
 -type env_var_value() :: string().
 -type app_key_value() :: any().
@@ -43,21 +43,37 @@ set_config(AppName, AppKey, EnvKey, Opts) ->
     set_env_value(AppName, AppKey, EnvKey, EnvValue, Opts).
 
 -spec get_config(app_name(), app_key()) -> app_key_value()|no_return().
-get_config(AppName, AppKey) ->
+get_config(AppName, AppKey) when is_atom(AppKey) ->
     case application:get_env(AppName, AppKey) of
         undefined ->
             erlang:error({missing_config, AppKey});
         {ok, Val} ->
             Val
+    end;
+get_config(AppName, [AppKey | SubKeys] = Key) ->
+    Val = get_config(AppName, AppKey),
+    case get_sub_config(SubKeys, Val) of
+        undefined ->
+            erlang:error({missing_config, Key});
+        Value ->
+            Value
     end.
 
 -spec get_config(app_name(), app_key(), default_value()) -> app_key_value().
-get_config(AppName, AppKey, DefaultValue) ->
+get_config(AppName, AppKey, DefaultValue) when is_atom(AppKey) ->
     case application:get_env(AppName, AppKey) of
         undefined ->
             DefaultValue;
         {ok, Val} ->
             Val
+    end;
+get_config(AppName, [AppKey | SubKeys], DefaultValue) ->
+    Val = get_config(AppName, AppKey, []),
+    case get_sub_config(SubKeys, Val) of
+        undefined ->
+            DefaultValue;
+        Value ->
+            Value
     end.
 
 -spec update_env(app_name(), file:filename_all(),
@@ -116,6 +132,18 @@ get_default(Fun) when is_function(Fun, 0) ->
 get_default(Other) ->
     Other.
 
+get_sub_config([], Value) ->
+    Value;
+get_sub_config([Key | Rest], Parent) when is_list(Parent) ->
+    case proplists:get_value(Key, Parent) of
+        undefined ->
+            undefined;
+        Value ->
+            get_sub_config(Rest, Value)
+    end;
+get_sub_config(_, _) ->
+    undefined.
+
 set_env_value(AppName, AppKey, EnvKey, missing_env_key, Opts) ->
     case proplists:is_defined(default, Opts) of
         true ->
@@ -134,8 +162,22 @@ set_env_value(AppName, AppKey, _, {value, EnvValue}, Opts) ->
     TransformedValue = transform_value(EnvValue, Transform),
     set_env(AppName, AppKey, TransformedValue).
 
-set_env(AppName, AppKey, Value) ->
-    application:set_env(AppName, AppKey, Value).
+set_env(AppName, AppKey, Value) when is_atom(AppKey) ->
+    application:set_env(AppName, AppKey, Value);
+set_env(AppName, [AppKey | SubKeys], Value) ->
+    Old = application:get_env(AppName, AppKey, []),
+    New = set_sub_env(SubKeys, Value, Old),
+    application:set_env(AppName, AppKey, New).
+
+set_sub_env([], Value, _) ->
+    Value;
+set_sub_env([Key | Rest], Value, Parent) when is_list(Parent) ->
+    Old = proplists:get_value(Key, Parent, []),
+    New = set_sub_env(Rest, Value, Old),
+    lists:keystore(Key, 1, Parent, {Key, New});
+set_sub_env([Key | Rest], Value, _) ->
+    New = set_sub_env(Rest, Value, []),
+    [{Key, New}].
 
 read_file(IoDev, Retval) ->
     case file:read_line(IoDev) of
