@@ -165,7 +165,10 @@ set_env_value(AppName, AppKey, _, {value, EnvValue}, Opts) ->
 set_env(AppName, AppKey, Value) when is_atom(AppKey) ->
     application:set_env(AppName, AppKey, Value);
 set_env(AppName, [AppKey | SubKeys], Value) ->
-    Old = application:get_env(AppName, AppKey, []),
+    Old = case application:get_env(AppName, AppKey) of
+              undefined -> [];
+              {ok, Val} -> Val
+          end,
     New = set_sub_env(SubKeys, Value, Old),
     application:set_env(AppName, AppKey, New).
 
