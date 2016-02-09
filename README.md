@@ -5,7 +5,7 @@ pass configuration details to your application using the environment.
 
 Reason: http://www.12factor.net/config
 
-[![Build Status](https://magnum.travis-ci.com/heroku/stillir.png?token=xVUSrt9RJn9ZjQwspdLg&branch=master)](https://magnum.travis-ci.com/heroku/stillir)
+[![Build Status](https://travis-ci.org/heroku/stillir.svg?branch=master)](https://travis-ci.org/heroku/stillir)
 
 ## The name
 
