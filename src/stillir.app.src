@@ -5,5 +5,8 @@
   {vsn, "1.0.0"},
   {registered, []},
   {applications, [kernel,
-                  stdlib]}
+                  stdlib]},
+  {maintainers, ["Fred Hebert"]},
+  {licenses, ["BSD"]},
+  {links, [{"Github", "https://github.com/heroku/stillir"}]}
  ]}.
