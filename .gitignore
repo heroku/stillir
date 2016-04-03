@@ -1,3 +1,6 @@
 logs/
 *.beam
 *.app
+/.eunit
+/.rebar
+/_build
