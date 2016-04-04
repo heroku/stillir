@@ -1,5 +1,5 @@
 language: erlang
-script: "mkdir -p logs; rebar compile && ct_run -dir test/ -logdir logs -pa ebin"
+script: "mkdir -p logs; rebar compile && rebar eunit && ct_run -dir test/ -logdir logs -pa ebin"
 otp_release:
   - R16B
   - R15B02
