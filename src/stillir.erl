@@ -82,6 +82,23 @@ transform_value(Value, binary) when is_list(Value) ->
     list_to_binary(Value);
 transform_value(Value, atom) when is_list(Value) ->
     list_to_atom(Value);
+transform_value(Value, boolean) when is_list(Value) ->
+    case string:to_lower(string:strip(Value)) of
+        "true" ->
+            true;
+        "yes" ->
+            true;
+        "1" ->
+            true;
+        "false" ->
+            false;
+        "no" ->
+            false;
+        "0" ->
+            false;
+        _ ->
+            erlang:error({not_a_boolean, Value})
+    end;
 transform_value(Value, Fun) when is_function(Fun, 1) andalso is_list(Value) ->
     Fun(Value);
 transform_value(Value, _) ->
@@ -180,6 +197,14 @@ transform_value_test_() ->
     ,?_assertEqual(hello, transform_value("hello", atom))
     ,?_assertEqual('5', transform_value("5", atom))
     ,?_assertEqual('', transform_value("", atom))
+
+    ,?_assertEqual(true, transform_value("true", boolean))
+    ,?_assertEqual(true, transform_value("TRUE", boolean))
+    ,?_assertEqual(true, transform_value("1", boolean))
+    ,?_assertEqual(false, transform_value("NO", boolean))
+    ,?_assertEqual(false, transform_value("0", boolean))
+    ,?_assertEqual(false, transform_value("False", boolean))
+    ,?_assertError({not_a_boolean, "foo"}, transform_value("foo", boolean))
 
     ,?_assertEqual(strawberry, transform_value("1024", fun (_) -> strawberry end))
 
