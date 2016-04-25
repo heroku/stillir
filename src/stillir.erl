@@ -40,7 +40,8 @@ set_config(AppName, AppKey, EnvKey) ->
                  opts()) -> ok|no_return().
 set_config(AppName, AppKey, EnvKey, Opts) ->
     EnvValue = get_env(EnvKey),
-    set_env_value(AppName, AppKey, EnvKey, EnvValue, Opts).
+    AppEnvValue = get_app_env(AppName, AppKey),
+    set_env_value(AppName, AppKey, EnvKey, EnvValue, AppEnvValue, Opts).
 
 -spec get_config(app_name(), app_key()) -> app_key_value()|no_return().
 get_config(AppName, AppKey) ->
@@ -128,16 +129,24 @@ get_env(EnvKey) ->
             {value, EnvValue}
     end.
 
+get_app_env(AppName, AppKey) ->
+    case application:get_env(AppName, AppKey) of
+        {ok, Value} ->
+            {value, Value};
+        undefined ->
+            missing_app_env_key
+    end.
+
 get_default(Fun) when is_function(Fun, 0) ->
     Fun();
 get_default(Other) ->
     Other.
 
-set_env_value(AppName, AppKey, EnvKey, missing_env_key, Opts) ->
+set_env_value(AppName, AppKey, EnvKey, missing_env_key, missing_app_env_key, Opts) ->
     case proplists:is_defined(default, Opts) of
         true ->
             DefaultValue = get_default(proplists:get_value(default, Opts)),
-            set_env_value(AppName, AppKey, EnvKey, {value, DefaultValue}, Opts);
+            set_env_value(AppName, AppKey, EnvKey, {value, DefaultValue}, missing_app_env_key, Opts);
         false ->
             case proplists:get_value(required, Opts) of
                 true ->
@@ -146,10 +155,12 @@ set_env_value(AppName, AppKey, EnvKey, missing_env_key, Opts) ->
                     ok
             end
     end;
-set_env_value(AppName, AppKey, _, {value, EnvValue}, Opts) ->
+set_env_value(AppName, AppKey, _, {value, EnvValue}, _, Opts) ->
     Transform = proplists:get_value(transform, Opts),
     TransformedValue = transform_value(EnvValue, Transform),
-    set_env(AppName, AppKey, TransformedValue).
+    set_env(AppName, AppKey, TransformedValue);
+set_env_value(AppName, AppKey, _, _, {value, AppEnvValue}, _) ->
+    set_env(AppName, AppKey, AppEnvValue).
 
 set_env(AppName, AppKey, Value) ->
     application:set_env(AppName, AppKey, Value).

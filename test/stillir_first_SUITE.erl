@@ -11,6 +11,9 @@
 all() ->
     [set_conf_no_default
      ,set_conf_default
+     ,set_conf_app_env
+     ,set_conf_app_env_with_env_var
+     ,set_conf_app_env_with_default
      ,set_conf_transform_fun
      ,set_conf_default_transform_fun
      ,set_conf_default_transform_fun2
@@ -35,6 +38,9 @@ end_per_suite(Config) ->
 %% Runs before the test case. Runs in the same process.
 init_per_testcase(set_conf_no_default, Config) ->
     true = os:putenv("SET_CONF_NO_DEFAULT", "test value 1"),
+    Config;
+init_per_testcase(set_conf_app_env_with_env_var, Config) ->
+    true = os:putenv("SET_CONF_APP_ENV_WITH_ENV_VAR", "bar"),
     Config;
 init_per_testcase(set_conf_transform_fun, Config) ->
     true = os:putenv("SET_CONF_TRANSFORM_FUN", "1000"),
@@ -87,6 +93,26 @@ set_conf_default(Config) ->
                                        end}]),
     default_value = stillir:get_config(stillir, set_conf_default),
     default_value = stillir:get_config(stillir, set_conf_default_2),
+    Config.
+
+set_conf_app_env(Config) ->
+    ok = application:set_env(stillir, set_conf_app_env, foo),
+    ok = stillir:set_config(stillir, set_conf_app_env, "SET_CONF_APP_ENV"),
+    foo = stillir:get_config(stillir, set_conf_app_env),
+    Config.
+
+%% env vars should have priority over previously set app env vars
+set_conf_app_env_with_env_var(Config) ->
+    ok = application:set_env(stillir, set_conf_app_env_with_env_var, foo),
+    ok = stillir:set_config(stillir, set_conf_app_env_with_env_var, "SET_CONF_APP_ENV_WITH_ENV_VAR"),
+    "bar" = stillir:get_config(stillir, set_conf_app_env_with_env_var),
+    Config.
+
+%% previously set app env vars should have priority over a default value in the options
+set_conf_app_env_with_default(Config) ->
+    ok = application:set_env(stillir, set_conf_app_env_with_default, foo),
+    ok = stillir:set_config(stillir, set_conf_app_env_with_default, "SET_CONF_APP_ENV_WITH_DEFAULT", [{default, bar}]),
+    foo = stillir:get_config(stillir, set_conf_app_env_with_default),
     Config.
 
 set_conf_transform_fun(Config) ->
