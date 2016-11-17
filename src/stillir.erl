@@ -15,7 +15,7 @@
 -type default_value() :: app_key_value().
 -type transform_fun() :: fun(((env_var_value())) -> app_key_value()).
 -type default_fun() :: fun(() -> default_value()).
--type transform() :: integer|float|binary|atom|transform_fun().
+-type transform() :: integer|float|binary|atom|boolean|transform_fun().
 -type opt() :: {default, any()|default_fun()}|{transform, transform()}|required.
 -type opts() :: [opt()]|[].
 -type config_spec() :: {app_key(), env_key()}|
@@ -73,6 +73,7 @@ update_env(AppName, Filename, Specs) ->
     end.
 
 %% Internal
+-spec transform_value(any(), undefined|transform()) -> any().
 transform_value(Value, undefined) when is_list(Value) ->
     Value;
 transform_value(Value, integer) when is_list(Value) ->

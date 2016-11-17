@@ -1,6 +1,6 @@
 # Stillir
 
-A library to cache Environmental variables for your Erlang application, useful when you 
+A library to cache Environmental variables for your Erlang application, useful when you
 pass configuration details to your application using the environment.
 
 Reason: http://www.12factor.net/config
@@ -40,13 +40,20 @@ $ rebar compile ct
 -type default_value() :: app_key_value().
 -type transform_fun() :: fun(((env_var_value())) -> app_key_value()).
 -type default_fun() :: fun(() -> default_value()).
--type transform() :: integer|float|binary|atom|transform_fun().
+-type transform() :: integer|float|binary|atom|boolean|transform_fun().
 -type opt() :: {default, any()|default_fun()}|{transform, transform()}|required.
 -type opts() :: [opt()]|[].
 -type config_spec() :: {app_key(), env_key()}|
                        {app_key(), env_key(), opts()}.
 -type config_specs() :: [config_spec()].
 ```
+
+`boolean` transform converts the following strings to booleans
+
+`true`: `true`, `yes`, `1`
+`false`: `false`, `no`, `0`
+
+and throws an error otherwise
 
 ### Functions
 
