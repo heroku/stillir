@@ -2,8 +2,11 @@
 {application, stillir,
  [
   {description, "Read Unix env vars into application config"},
-  {vsn, "1.0.0"},
+  {vsn, git},
   {registered, []},
   {applications, [kernel,
-                  stdlib]}
+                  stdlib]},
+  {maintainers, ["Jamu Kakar", "Tilman Holschuh"]},
+  {licenses, ["BSD"]},
+  {links, [{"Github", "https://github.com/heroku/stillir"}]}
  ]}.
