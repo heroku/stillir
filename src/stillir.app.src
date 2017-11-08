@@ -6,7 +6,7 @@
   {registered, []},
   {applications, [kernel,
                   stdlib]},
-  {maintainers, ["Fred Hebert"]},
+  {maintainers, ["Jamu Kakar", "Tilman Holschuh"]},
   {licenses, ["BSD"]},
   {links, [{"Github", "https://github.com/heroku/stillir"}]}
  ]}.
